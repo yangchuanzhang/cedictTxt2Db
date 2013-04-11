@@ -85,8 +85,8 @@ func main() {
       // execute insert statement for this row
       _, err = stmt.Exec(parseResult[1], // trad
         parseResult[2], // simp
-        strings.Replace(parseResult[3], "u:", "v", -1), // pinyin (replace "u:" by "v"
-        parseResult[4]) // english
+        strings.Replace(parseResult[3], "u:", "v", -1), // pinyin (replace "u:" by "v")
+        strings.Replace(parseResult[4], "/", " / ", -1)) // english (replace "/" by " / ")
       if err != nil {
         fmt.Println(err)
         return
