@@ -14,6 +14,24 @@ import (
 var parseRegexp, _ = regexp.Compile(`(.*?) (.*?) \[(.*?)\] \/(.*)\/`)
 
 func main() {
+  if len(os.Args) != 2 {
+    fmt.Println("Usage: cedictTxt2Db <input text file>")
+    os.Exit(-1)
+  }
+
+  fmt.Println("Load raw data...")
+
+  // load raw data into memory
+  txtData, err := ioutil.ReadFile(os.Args[1])
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+
+  // split data into lines
+  lines := strings.Split(string(txtData), "\n")
+
+
   // remove old database
   os.Remove("./cedict.sqlite3")
 
@@ -45,18 +63,6 @@ func main() {
       return
     }
   }
-
-  fmt.Println("Load raw data...")
-
-  // load raw data into memory
-  txtData, err := ioutil.ReadFile("./cedict-data.txt")
-  if err != nil {
-    fmt.Println(err)
-    return
-  }
-
-  // split data into lines
-  lines := strings.Split(string(txtData), "\n")
 
   // create new transaction to add the data to the databse
   tx, err := db.Begin()
