@@ -8,6 +8,7 @@ import (
   "io/ioutil"
   "strings"
   "regexp"
+  "unicode/utf8"
 )
 
 // regexp used to parse the lines in the raw, downloaded text file
@@ -47,11 +48,13 @@ func main() {
 
   // SQL code to create the table
   createTableSql := []string {
-    `CREATE TABLE dict (      
-      trad    VARCHAR(50),      
-      simp    VARCHAR(50),     
-      pinyin  VARCHAR(100),     
-      english VARCHAR(500))`,
+    `CREATE TABLE dict (
+      id        INTEGER PRIMARY KEY AUTOINCREMENT,
+      trad      VARCHAR(50),      
+      simp      VARCHAR(50),     
+      pinyin    VARCHAR(100),     
+      english   VARCHAR(500),
+      runecount INTEGER)`,
     "DELETE FROM dict",
   }
 
@@ -72,7 +75,7 @@ func main() {
   }
 
   // prepare insert statement and defer closing it
-  stmt, err := tx.Prepare("INSERT INTO dict(trad, simp, pinyin, english) VALUES(?, ?, ?, ?)")
+  stmt, err := tx.Prepare("INSERT INTO dict(trad, simp, pinyin, english, runecount) VALUES(?, ?, ?, ?, ?)")
   if err != nil {
     fmt.Println(err)
     return
@@ -88,11 +91,19 @@ func main() {
       // use compiled regexp to parse line
       parseResult := parseRegexp.FindStringSubmatch(line)
 
+      runecount := utf8.RuneCountInString(parseResult[1])
+
+      if runecount != utf8.RuneCountInString(parseResult[2]) {
+        fmt.Printf("Runecount of %q and %q unequal\n", parseResult[1], parseResult[2])
+        return
+      }
+
       // execute insert statement for this row
       _, err = stmt.Exec(parseResult[1], // trad
         parseResult[2], // simp
         strings.Replace(parseResult[3], "u:", "v", -1), // pinyin (replace "u:" by "v")
-        strings.Replace(parseResult[4], "/", " / ", -1)) // english (replace "/" by " / ")
+        strings.Replace(parseResult[4], "/", " / ", -1),
+        runecount) // english (replace "/" by " / ")
       if err != nil {
         fmt.Println(err)
         return
