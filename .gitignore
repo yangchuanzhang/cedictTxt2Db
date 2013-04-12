@@ -1,4 +1,7 @@
 *.swp
 .*.swp
 
+*.sqlite3
+*.txt
+
 .DS_Store
