@@ -1,3 +1,6 @@
+/*
+This program converts cedict text files (downloadable online) to sqlite3 databases.
+*/
 package main
 
 import (
